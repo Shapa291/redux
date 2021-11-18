@@ -1,20 +1,47 @@
-let state = 0;
-
 function updateState(state, action) {
-  if (action === "INCREMENT") {
-    return state + 1;
-  } else if (action === "DECREMENT") {
-    return state - 1;
+  if (action.type === "INCREMENT") {
+    return { count: state.count + action.amount };
+  } else if (action.type === "DECREMENT") {
+    return { count: state.count - action.amount };
   } else {
     return state;
   }
 }
 
-state = updateState (state, 'INCREMENT')
-console.log(state);
+class Store {
+  constructor(state, updateState) {
+    this._state = state;
+    this._updateState = updateState;
+    this._callbacks = [];
+  }
 
-state = updateState (state, 'DECREMENT')
-console.log(state);
+  get state() {
+    return this._state;
+  }
 
-state = updateState (state, 'OTHER')
-console.log(state);
+  update(action) {
+    this._state = this._updateState(this._state, action);
+    this._callbacks.forEach((callback) => callback());
+  }
+
+  subscribe(callback) {
+    this._callbacks.push(callback);
+    return () =>
+      (this._callbacks = this._callbacks.filter((cb) => cb !== callback));
+  }
+}
+
+const initialState = { count: 0 };
+
+const store = new Store(initialState, updateState);
+
+const incrementAction = { type: "INCREMENT", amount: 3 };
+const decrementAction = { type: "DECREMENT", amount: 1 };
+
+const unsubscribe = store.subscribe(() =>
+  console.log("Stage changed 2", store.state)
+);
+
+store.update(incrementAction);
+store.update(decrementAction);
+store.update({});
