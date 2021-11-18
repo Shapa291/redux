@@ -19,7 +19,7 @@ class Store {
     return this._state;
   }
 
-  update(action) {
+  update(action) {``
     this._state = this._updateState(this._state, action);
     this._callbacks.forEach((callback) => callback());
   }
